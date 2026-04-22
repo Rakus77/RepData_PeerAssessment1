@@ -36,7 +36,8 @@ NOTE: The GitHub repository also contains the dataset for the assignment so you 
 <br>
 
 #### Loading libraries
-```{r, warning=FALSE, message=FALSE}
+
+``` r
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, fig.width = 10, 
 		      fig.height = 5, fig.keep = 'all', 
 		      dev = 'png')
@@ -46,7 +47,8 @@ library(dplyr)
 
 #### Loading and preprocessing the data
 
-```{r, warning=FALSE, message=FALSE}
+
+``` r
 #		Unzip "activity.zip" folder
 filedest <- getwd()
 unzip("activity.zip", exdir = filedest)
@@ -63,13 +65,13 @@ step_data_complete <- step_data[complete.cases(step_data),]
 
 #		Create data frame of rows with NAs.
 step_data_na <- step_data[!complete.cases(step_data),]                
-
 ```
    
 
 #### What is mean total number of steps taken per day?
 
-```{r, warning=FALSE, message=FALSE}
+
+``` r
 #       Sum steps by day.
 steps_by_day <- with(step_data_complete,(aggregate(steps~date, FUN = sum, na.rm = TRUE )))
 
@@ -83,17 +85,32 @@ histogram <- ggplot(data = steps_by_day)+
 		ggtitle("Frequency of Steps Taken in a Day")+
 		theme(plot.title = element_text(hjust = 0.5))
 print(histogram)
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
+``` r
 #       Calculate the mean of the daily steps.
 mean(steps_by_day$steps)
+```
+
+```
+## [1] 10766.19
+```
+
+``` r
 #       Calculate the median of the daily steps.
 median(steps_by_day$steps)              
+```
 
+```
+## [1] 10765
 ```
 
 #### What is the average daily activity pattern?
 
-```{r, warning=FALSE, message=FALSE}
+
+``` r
 #       Find mean steps by interval.
 mean_steps_by_int <- with(step_data,(aggregate(steps~interval, FUN = mean, na.rm = TRUE)))
 
@@ -107,21 +124,36 @@ tseries <- ggplot(data = mean_steps_by_int, aes(interval, steps))+
 		xlab("Interval")+
 		theme(plot.title = element_text(hjust = 0.5))
 print(tseries)
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
+``` r
 #       Find the interval with the maximum average steps across
 #       all days that have records.
 mean_steps_by_int[which.max(mean_steps_by_int$steps), ]          
+```
 
+```
+##     interval    steps
+## 104      835 206.1698
 ```
 
 
 #### Imputing missing values
 
-```{r, warning=FALSE, message=FALSE}
+
+``` r
 #       Calculate the total number of missing values in the original data set.
 colSums(is.na(step_data))[1:3]
+```
 
+```
+##    steps     date interval 
+##     2304        0        0
+```
 
+``` r
 #       Calculate the mean steps by interval and weekday (DOW) of complete cases.
 mean_steps_by_int <- with(step_data_complete,(aggregate(steps~interval + DOW, FUN = mean, na.rm = TRUE)))
 
@@ -153,19 +185,32 @@ histogram <- ggplot(data = steps_by_day_backfill)+
         ggtitle("Freq. of Steps Taken in a Day (Imputation)")+
         theme(plot.title = element_text(hjust = 0.5))
 print(histogram)
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
 
+``` r
 #	Calculate new mean and median with imputed data included.
 mean(steps_by_day_backfill$steps)
-median(steps_by_day_backfill$steps)
+```
 
+```
+## [1] 10821.21
+```
+
+``` r
+median(steps_by_day_backfill$steps)
+```
+
+```
+## [1] 11015
 ```
 
 
 #### Are there differences in activity patterns between weekdays and weekends?
 
-```{r, warning=FALSE, message=FALSE}
 
+``` r
 #	Create weekday and weekend vectors.
 wday <- c("Monday", "Tuesday", "Wednesday","Thursday" , "Friday")
 wend <- c( "Saturday" , "Sunday")
@@ -198,5 +243,6 @@ tseries.factor <- ggplot(data = steps_by_day_backfill2)+
 				plot.subtitle = element_text(hjust = 0.5))
 
 print(tseries.factor)
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
