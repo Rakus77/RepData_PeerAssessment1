@@ -1,5 +1,5 @@
 library(ggplot2)
-
+library(dplyr)
 
 filedest <- getwd()
 unzip("activity.zip", exdir = filedest)
@@ -92,12 +92,42 @@ histogram <- ggplot(data = steps_by_day_backfill)+
         theme(plot.title = element_text(hjust = 0.5))
 print(histogram)
 
+
+#	Calculate new mean and median with imputed data included.
 mean(steps_by_day_backfill$steps)
 median(steps_by_day_backfill$steps)
 
+#	Create weekday and weekend vectors.
+wday <- c("Monday", "Tuesday", "Wednesday","Thursday" , "Friday")
+wend <- c( "Saturday" , "Sunday")
 
+#	Create new column in data set.
+step_data_backfill2 <-  step_data_backfill %>% 
+			mutate(DOW.Type = ifelse(DOW %in% wday, "weekday", "weekend"))
+	
+#	Coerce new column to factor instead of character.	
+step_data_backfill2$DOW.Type <- as.factor(step_data_backfill2$DOW.Type)
 
+#	Calculate the mean steps by interval and type of day (DOW.Type).
+steps_by_day_backfill2 <- with(step_data_backfill2,(aggregate(steps~interval+DOW.Type, FUN = mean, na.rm = TRUE )))
+	
 
+#	Plot the mean steps across all intervals broken out by type of day (DOW.Type).
+tseries.factor <- ggplot(data = steps_by_day_backfill2)+
+			geom_line(aes(x = interval, y = steps, 
+				      color = factor(DOW.Type)))+
+			facet_grid(DOW.Type~.)+
+			scale_color_manual(values = c("weekday" = "magenta2", "weekend" = "royalblue"))+
+			xlab("Interval")+
+			ylab("Average Steps")+
+			labs(   title = "Average Steps by Interval",
+				subtitle = "Comparing the weekend to weekdays")+
+			theme(legend.title = element_blank(), 
+				legend.position = "bottom", 
+				plot.title = element_text(hjust = 0.5),
+				plot.subtitle = element_text(hjust = 0.5))
+
+print(tseries.factor)
 
 
 
