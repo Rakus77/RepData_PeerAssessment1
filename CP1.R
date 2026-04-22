@@ -1,8 +1,13 @@
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, fig.width = 10, fig.height = 5,
+		      fig.keep = 'all' ,fig.path = 'figures\ ', dev = 'png')
 library(ggplot2)
 library(dplyr)
 
+#	Unzip "activity.zip" folder
 filedest <- getwd()
 unzip("activity.zip", exdir = filedest)
+
+#	Read CSV file to step_data
 step_data <- read.csv("activity.csv", header = TRUE, colClasses = c("numeric", 
 			"Date", "numeric"))
 
