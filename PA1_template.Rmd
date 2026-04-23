@@ -1,5 +1,6 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
+author: "Eric Rakus"
 output: 
   html_document:
     keep_md: true
@@ -36,6 +37,9 @@ NOTE: The GitHub repository also contains the dataset for the assignment so you 
 <br>
 
 #### Loading libraries
+
+Setting the knitr options and attaching the libraries we will need. 
+
 ```{r, warning=FALSE, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, fig.width = 10, 
                       fig.height = 5, fig.keep = 'all', fig.path = "./figure/",
@@ -43,8 +47,12 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, fig.width = 10,
 library(ggplot2)
 library(dplyr)
 ```
+<br>
+<br>
 
 #### Loading and preprocessing the data
+
+First we unzip the data file, `activity.csv`, included in the forked repository.  Once unzipped, we read the data in using the function `read.csv()`.  We add a column that converts the values in the date column to the corresponding day of the week.  Since we do not need to worry about `NA` values for the first couple of  steps we will make a dataset of only complete cases.  However, we will need the `NA` values later so we will put rows with missing values in their own dataset as well.  
 
 ```{r, warning=FALSE, message=FALSE}
 #		Unzip "activity.zip" folder
@@ -58,16 +66,20 @@ step_data <- read.csv("activity.csv", header = TRUE, colClasses = c("numeric",
 #		Add column for the day of the week (DOW).
 step_data$DOW <- weekdays(step_data$date)         
 
-#		Create data set of complete cases.
+#		Create dataset of complete cases.
 step_data_complete <- step_data[complete.cases(step_data),]
 
 #		Create data frame of rows with NAs.
 step_data_na <- step_data[!complete.cases(step_data),]                
 
 ```
-   
+
+<br>
+<br>
 
 #### What is mean total number of steps taken per day?
+
+To answer this question we create a new dataset that takes the `sum()` of all the steps taken on each day regardless of the interval of time they occurred in.  Now each day has a corresponding total number of steps taken in this dataset.  We can then plot a histogram of this dataset. 
 
 ```{r, warning=FALSE, message=FALSE}
 #       Sum steps by day.
@@ -75,7 +87,7 @@ steps_by_day <- with(step_data_complete,(aggregate(steps~date, FUN = sum, na.rm 
 
 #       Plot histogram of frequency of daily steps in buckets 1000 steps wide.
 histogram <- ggplot(data = steps_by_day)+
-		geom_histogram(aes(x = steps), binwidth = 1000, color = "black",
+		geom_histogram(aes(x = steps), breaks = seq(0, 22000, by = 1000), color = "black",
 			       fill = "gold")+
 		ylab("Frequency")+
 		ylim(0,15)+
@@ -91,7 +103,13 @@ median(steps_by_day$steps)
 
 ```
 
+It may be worth noting here that there are 288 five-minute intervals in a day.  There are 8 unique days in the dataset containing rows with `NA` values each with 288 records.  This means that there is no step data for 8 entire days and only those 8 days are missing values for steps.  This is why there are 53 observations in the dataset `steps_by_day` even though there are 61 days in the original dataset.  
+
+<br>
+
 #### What is the average daily activity pattern?
+
+Now we must do a similar process to the last, only this time we will take the `mean()` of the steps by the interval they were taken in.  This results in an average number of steps taken in each of the 288 intervals in a day.  We will then plot this data in a time series showing how the average number of steps taken throughout the day changes over time.  Finally, we will select the interval that has the highest average number of steps taken.
 
 ```{r, warning=FALSE, message=FALSE}
 #       Find mean steps by interval.
@@ -114,21 +132,35 @@ mean_steps_by_int[which.max(mean_steps_by_int$steps), ]
 
 ```
 
+So what we find is the interval 835 (representing the five minute interval between 8:35am and 8:40am) has the highest average steps taken with approximately 206 steps.  If we look at the time series above this calculation we see that this makes sense as the values peak around that time/interval at just over 200 steps on the y axis.  
+
+<br>
 
 #### Imputing missing values
 
+Now we take a look at the dataset containing `NA` values and think of a way we can pass values to those rows that are missing them.  Though it is not true for everyone, most people have routines where most Mondays look the same (get up, go to work, come home, etc.).  It is for this reason that we have chosen to impute these missing values by passing them the average steps by interval by day of the week.  For example, to find the value passed to the first missing value (interval zero on Monday October 1st 2012) we will take the average of the number of steps in that interval for all other Mondays that are not missing values.  
+
+<br>
+First lets see how many values are missing in each column of the original dataset.
+
 ```{r, warning=FALSE, message=FALSE}
-#       Calculate the total number of missing values in the original data set.
+#       Calculate the total number of missing values in the original dataset.
 colSums(is.na(step_data))[1:3]
+```
 
+So there are 2304 missing values in the steps column and all other columns have zero.  It is reassuring since there are also 2304 observations in the dataset of incomplete cases. 
+<br>
+<br>
+Now we will create a table of average steps taken by interval on each day of the week from the dataset of complete cases. Then we will merge that dataset with the dataset missing the values for steps.  After removing the column of missing values, renaming the imputed step column, and reording the columns to match those in the dataset of complete cases we have a table that can then be combined with the set of complete cases to give us all of our original observations back in one table with any missing values imputed.
 
+```{r, warning=FALSE, message=FALSE}
 #       Calculate the mean steps by interval and weekday (DOW) of complete cases.
-mean_steps_by_int <- with(step_data_complete,(aggregate(steps~interval + DOW, FUN = mean, na.rm = TRUE)))
+mean_steps_by_int_DOW <- with(step_data_complete,(aggregate(steps~interval + DOW, FUN = mean, na.rm = TRUE)))
 
 #       Merge replacement value column for NA values with mean steps for 
 #       corresponding interval and day of week. Remove NA column. Rename 
 #       replacement column. Reorder columns to match original data set.
-step_data_imputed <- merge(step_data_na, mean_steps_by_int, by = c("interval", "DOW"))
+step_data_imputed <- merge(step_data_na, mean_steps_by_int_DOW, by = c("interval", "DOW"))
 
 step_data_imputed <- step_data_imputed[,-3]
 
@@ -138,21 +170,30 @@ step_data_imputed <- step_data_imputed[,c("steps","date","interval","DOW")]
 
 #       Merge rows of complete cases and imputed cases.
 step_data_backfill <- rbind(step_data_complete, step_data_imputed)
+```
 
+<br>
+
+With this new imputed dataset, we will again answer the original question posed and plot the results.  We `sum()` the steps by date and plot a histogram to see how the data has changed from before.
+
+<br>
+
+```{r, warning=FALSE, message=FALSE}
+#	Sum steps by day with new partially imputed dataset. 
 steps_by_day_backfill <- with(step_data_backfill,(aggregate(steps~date, FUN = sum, na.rm = TRUE )))
 
 
 #       Plot histogram of frequency of daily steps in buckets 1000 steps wide
 #       with imputed values included. 
-histogram <- ggplot(data = steps_by_day_backfill)+
-        geom_histogram(aes(x = steps), binwidth = 1000, color = "black",
+histogram.imputed <- ggplot(data = steps_by_day_backfill)+
+        geom_histogram(aes(x = steps), breaks = seq(0, 22000, by = 1000), color = "black",
                        fill = "gold")+
         ylab("Frequency")+
         ylim(0,15)+
         xlab("Daily Steps Taken")+
         ggtitle("Freq. of Steps Taken in a Day (Imputation)")+
         theme(plot.title = element_text(hjust = 0.5))
-print(histogram)
+print(histogram.imputed)
 
 
 #	Calculate new mean and median with imputed data included.
@@ -161,8 +202,16 @@ median(steps_by_day_backfill$steps)
 
 ```
 
+<br>
+We can see that little has changed from the first histogram to the second.  There have been 8 data points added in (the 8 days of imputed data) but the distribution is largely unchanged.  The mean and median have increased slightly from the first set of data to the second.  This is due to the manner in which we chose to impute the data. 
+
+<br>
 
 #### Are there differences in activity patterns between weekdays and weekends?
+
+We will now compare the step data broken out by weekdays and weekends.  To accomplish this we take the new, partially imputed data set and add a column that determines if a row's date is on the weekend or if it is a weekday.  Then we take the mean steps by interval and by day type (weekday or weekend) and plot two time series that compare the two types of days.  
+
+<br>
 
 ```{r, warning=FALSE, message=FALSE}
 
@@ -170,7 +219,7 @@ median(steps_by_day_backfill$steps)
 wday <- c("Monday", "Tuesday", "Wednesday","Thursday" , "Friday")
 wend <- c( "Saturday" , "Sunday")
 
-#	Create new column in data set.
+#	Create new column in dataset.
 step_data_backfill2 <-  step_data_backfill %>% 
 			mutate(DOW.Type = ifelse(DOW %in% wday, "weekday", "weekend"))
 	
@@ -200,3 +249,16 @@ tseries.factor <- ggplot(data = steps_by_day_backfill2)+
 print(tseries.factor)
 
 ```
+
+<br>
+
+We see a similar pattern.  It looks like people don't start taking steps until some time after 5am and they really slow down around 9pm.  This probably marks when people generally get up and when they go to sleep.  There are differences though.  It appears that on weekdays people take a lot of their daily steps before 10am and take much fewer steps throughout the day.  This could represent people getting ready and going to work during the week and then moving less when they are at work.  Whereas, on the weekend the peak just before 10am is lower than the peak on weekdays, but the steps throughout the day are closer to the peak in the morning.  This makes sense as you can imagine people moving around and enjoying their weekends more instead of sitting at a desk at work.  
+
+
+
+
+
+
+
+
+
