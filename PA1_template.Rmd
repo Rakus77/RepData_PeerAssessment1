@@ -38,8 +38,8 @@ NOTE: The GitHub repository also contains the dataset for the assignment so you 
 #### Loading libraries
 ```{r, warning=FALSE, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, fig.width = 10, 
-		      fig.height = 5, fig.keep = 'all', 
-		      dev = 'png')
+                      fig.height = 5, fig.keep = 'all', fig.path = "./figure/",
+                      dev = 'png')
 library(ggplot2)
 library(dplyr)
 ```

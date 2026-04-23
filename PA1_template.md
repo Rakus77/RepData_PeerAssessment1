@@ -39,8 +39,8 @@ NOTE: The GitHub repository also contains the dataset for the assignment so you 
 
 ``` r
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, fig.width = 10, 
-		      fig.height = 5, fig.keep = 'all', 
-		      dev = 'png')
+                      fig.height = 5, fig.keep = 'all', fig.path = "./figure/",
+                      dev = 'png')
 library(ggplot2)
 library(dplyr)
 ```
@@ -87,7 +87,7 @@ histogram <- ggplot(data = steps_by_day)+
 print(histogram)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+![](./figure/unnamed-chunk-3-1.png)<!-- -->
 
 ``` r
 #       Calculate the mean of the daily steps.
@@ -126,7 +126,7 @@ tseries <- ggplot(data = mean_steps_by_int, aes(interval, steps))+
 print(tseries)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+![](./figure/unnamed-chunk-4-1.png)<!-- -->
 
 ``` r
 #       Find the interval with the maximum average steps across
@@ -187,7 +187,7 @@ histogram <- ggplot(data = steps_by_day_backfill)+
 print(histogram)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
+![](./figure/unnamed-chunk-5-1.png)<!-- -->
 
 ``` r
 #	Calculate new mean and median with imputed data included.
@@ -245,4 +245,4 @@ tseries.factor <- ggplot(data = steps_by_day_backfill2)+
 print(tseries.factor)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+![](./figure/unnamed-chunk-6-1.png)<!-- -->

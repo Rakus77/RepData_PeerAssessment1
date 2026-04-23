@@ -1,5 +1,6 @@
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, fig.width = 10, fig.height = 5,
-		      fig.keep = 'all' ,fig.path = 'figures\ ', dev = 'png')
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, fig.width = 10, 
+                      fig.height = 5, fig.keep = 'all', fig.path = "./figure/",
+                      dev = 'png')
 library(ggplot2)
 library(dplyr)
 
@@ -115,7 +116,8 @@ step_data_backfill2$DOW.Type <- as.factor(step_data_backfill2$DOW.Type)
 
 #	Calculate the mean steps by interval and type of day (DOW.Type).
 steps_by_day_backfill2 <- with(step_data_backfill2,(aggregate(steps~interval+DOW.Type, FUN = mean, na.rm = TRUE )))
-	
+# mean_weekday <- with(step_data_backfill2[step_data_backfill2$DOW.Type == "weekday",],(aggregate(steps~interval+DOW.Type, FUN = mean, na.rm = TRUE )))
+# mean_weekend <- 
 
 #	Plot the mean steps across all intervals broken out by type of day (DOW.Type).
 tseries.factor <- ggplot(data = steps_by_day_backfill2)+
